@@ -1,0 +1,290 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --primary: #007aff;
+  --primary-dim: rgba(0, 122, 255, 0.12);
+  --green: #34c759;
+  --green-dim: rgba(52, 199, 89, 0.12);
+  --text: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --separator: rgba(60, 60, 67, 0.13);
+  --radius-card: 20px;
+  --radius-btn: 14px;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Header ─────────────────────────────────────────── */
+
+.app-header {
+  padding: 16px 20px 14px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  background: rgba(242, 242, 247, 0.85);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--separator);
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header h1 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+/* ── Main layout ────────────────────────────────────── */
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 20px 24px;
+}
+
+/* ── Upload section ─────────────────────────────────── */
+
+.upload-section {
+  flex: 1;
+  display: flex;
+}
+
+.upload-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 2px dashed var(--separator);
+  border-radius: var(--radius-card);
+  padding: 48px 24px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  min-height: 300px;
+  user-select: none;
+}
+
+.upload-area:active {
+  background: var(--primary-dim);
+  border-color: var(--primary);
+  border-style: solid;
+}
+
+.upload-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--primary-dim);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.upload-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+}
+
+.upload-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Result section ─────────────────────────────────── */
+
+.result-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.canvas-wrapper {
+  width: min(300px, 80vw);
+  height: min(300px, 80vw);
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 12px 40px rgba(0, 0, 0, 0.16);
+  flex-shrink: 0;
+}
+
+.canvas-wrapper canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Action bar ─────────────────────────────────────── */
+
+.action-bar {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.action-bar .btn {
+  flex: 1;
+}
+
+/* ── Buttons ────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 20px;
+  height: 52px;
+  border-radius: var(--radius-btn);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: -0.2px;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.12s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btn:active {
+  opacity: 0.72;
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  height: 44px;
+}
+
+/* ── Loading overlay ────────────────────────────────── */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(242, 242, 247, 0.75);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3.5px solid rgba(0, 122, 255, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Toast ──────────────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: rgba(28, 28, 30, 0.88);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: toast-in 0.2s ease, toast-out 0.2s ease 1.8s forwards;
+  z-index: 100;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Responsive tweaks ──────────────────────────────── */
+
+@media (min-width: 480px) {
+  .app-main {
+    max-width: 420px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
