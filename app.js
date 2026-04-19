@@ -3,12 +3,13 @@
 const fileInput      = document.getElementById('fileInput');
 const uploadSection  = document.getElementById('uploadSection');
 const resultSection  = document.getElementById('resultSection');
-const resultCanvas   = document.getElementById('resultCanvas');
+const resultImg      = document.getElementById('resultImg');
 const shareBtn       = document.getElementById('shareBtn');
 const saveBtn        = document.getElementById('saveBtn');
 const resetBtn       = document.getElementById('resetBtn');
 
-let outputBlob = null;
+let outputBlob   = null;
+let displayBlobUrl = null;
 
 // ── File selection ───────────────────────────────────────────────────────────
 
@@ -42,12 +43,14 @@ function renderCircleCrop(img) {
   const srcX = (w - size) / 2;
   const srcY = (h - size) / 2;
 
-  resultCanvas.width  = size;
-  resultCanvas.height = size;
+  // Off-DOM canvas — only exists during processing, not held in the live tree
+  const canvas = document.createElement('canvas');
+  canvas.width  = size;
+  canvas.height = size;
 
   // Request Display P3 so wide-gamut iPhone photos aren't clipped to sRGB.
   // Browsers that don't support the option silently fall back to sRGB.
-  const ctx = resultCanvas.getContext('2d', { colorSpace: 'display-p3' });
+  const ctx = canvas.getContext('2d', { colorSpace: 'display-p3' });
 
   // High-quality smoothing for any sub-pixel rounding at draw time
   ctx.imageSmoothingEnabled = true;
@@ -62,8 +65,14 @@ function renderCircleCrop(img) {
 
   ctx.drawImage(img, srcX, srcY, size, size, 0, 0, size, size);
 
-  resultCanvas.toBlob((blob) => {
+  canvas.toBlob((blob) => {
     outputBlob = blob;
+
+    // Swap in a blob URL — tiny pointer, no base64 inflation, single copy in memory
+    if (displayBlobUrl) URL.revokeObjectURL(displayBlobUrl);
+    displayBlobUrl = URL.createObjectURL(blob);
+    resultImg.src  = displayBlobUrl;
+
     hideLoading();
     uploadSection.hidden = true;
     resultSection.hidden = false;
@@ -94,6 +103,11 @@ saveBtn.addEventListener('click', downloadBlob);
 
 resetBtn.addEventListener('click', () => {
   outputBlob = null;
+  if (displayBlobUrl) {
+    URL.revokeObjectURL(displayBlobUrl);
+    displayBlobUrl = null;
+  }
+  resultImg.src = '';
   fileInput.value = '';
   resultSection.hidden = true;
   uploadSection.hidden = false;
