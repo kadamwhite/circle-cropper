@@ -19,29 +19,40 @@ fileInput.addEventListener('change', (e) => {
 
 async function processFile(file) {
   showLoading();
-  try {
-    const bitmap = await createImageBitmap(file);
-    renderCircleCrop(bitmap);
-    bitmap.close();
-  } catch (err) {
+  // Load via <img> so iOS uses its hardware JPEG/HEIC decoder at full resolution.
+  // createImageBitmap can silently downsample large photos due to iOS memory budgets.
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload  = () => { URL.revokeObjectURL(url); renderCircleCrop(img); };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
     hideLoading();
     showToast('Could not load image — please try another.');
-    console.error('Image load error:', err);
-  }
+  };
+  img.src = url;
 }
 
 // ── Circle crop ──────────────────────────────────────────────────────────────
 
-function renderCircleCrop(bitmap) {
-  // Largest centered square
-  const size = Math.min(bitmap.width, bitmap.height);
-  const srcX = (bitmap.width  - size) / 2;
-  const srcY = (bitmap.height - size) / 2;
+function renderCircleCrop(img) {
+  // Largest centered square at full source resolution
+  const w    = img.naturalWidth;
+  const h    = img.naturalHeight;
+  const size = Math.min(w, h);
+  const srcX = (w - size) / 2;
+  const srcY = (h - size) / 2;
 
   resultCanvas.width  = size;
   resultCanvas.height = size;
 
-  const ctx = resultCanvas.getContext('2d');
+  // Request Display P3 so wide-gamut iPhone photos aren't clipped to sRGB.
+  // Browsers that don't support the option silently fall back to sRGB.
+  const ctx = resultCanvas.getContext('2d', { colorSpace: 'display-p3' });
+
+  // High-quality smoothing for any sub-pixel rounding at draw time
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
   ctx.clearRect(0, 0, size, size);
 
   // Circular clip
@@ -49,7 +60,7 @@ function renderCircleCrop(bitmap) {
   ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
   ctx.clip();
 
-  ctx.drawImage(bitmap, srcX, srcY, size, size, 0, 0, size, size);
+  ctx.drawImage(img, srcX, srcY, size, size, 0, 0, size, size);
 
   resultCanvas.toBlob((blob) => {
     outputBlob = blob;
