@@ -10,7 +10,6 @@ const cropBtn       = document.getElementById('cropBtn');
 const cancelBtn     = document.getElementById('cancelBtn');
 const resultSection = document.getElementById('resultSection');
 const resultImg     = document.getElementById('resultImg');
-const shareBtn      = document.getElementById('shareBtn');
 const saveBtn       = document.getElementById('saveBtn');
 const resetBtn      = document.getElementById('resetBtn');
 
@@ -330,10 +329,14 @@ function renderCircleCrop(img, cx, cy, r) {
 
 // ── Result actions ────────────────────────────────────────────────────────────
 
-shareBtn.addEventListener('click', async () => {
+saveBtn.addEventListener('click', shareOrDownload);
+
+async function shareOrDownload() {
   if (!outputBlob) return;
   const file = new File([outputBlob], 'circle-crop.png', { type: 'image/png' });
 
+  // On iOS the only way to reach the Photos app is the share sheet (Save Image).
+  // Use it whenever the browser supports file sharing; fall back to blob download on desktop.
   if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: 'Circle Crop' });
@@ -343,9 +346,7 @@ shareBtn.addEventListener('click', async () => {
   } else {
     downloadBlob();
   }
-});
-
-saveBtn.addEventListener('click', downloadBlob);
+}
 
 resetBtn.addEventListener('click', () => {
   outputBlob = null;
