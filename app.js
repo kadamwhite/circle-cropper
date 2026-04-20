@@ -347,7 +347,7 @@ async function shareOrDownload() {
   if (navigator.share) {
     const file = new File([outputBlob], 'circle-crop.png', { type: 'image/png' });
     try {
-      await navigator.share({ files: [file], title: 'Circle Crop' });
+      await navigator.share({ files: [file] });
       return;
     } catch (err) {
       if (err.name === 'AbortError') return; // user dismissed — nothing to do
