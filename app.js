@@ -317,11 +317,18 @@ function renderCircleCrop(img, cx, cy, r) {
   ctx.drawImage(img, srcX, srcY, diameter, diameter, 0, 0, diameter, diameter);
 
   canvas.toBlob((blob) => {
+    hideLoading(); // always dismiss spinner first — a throw below must not leave it up
+
+    if (!blob) {
+      // iOS can pass null when the canvas exceeds its memory budget
+      showToast('Could not encode image — try a smaller crop area.');
+      return;
+    }
+
     outputBlob = blob;
     if (displayBlobUrl) URL.revokeObjectURL(displayBlobUrl);
     displayBlobUrl = URL.createObjectURL(blob);
     resultImg.src  = displayBlobUrl;
-    hideLoading();
     editorSection.hidden = true;
     resultSection.hidden = false;
   }, 'image/png');
@@ -333,19 +340,22 @@ saveBtn.addEventListener('click', shareOrDownload);
 
 async function shareOrDownload() {
   if (!outputBlob) return;
-  const file = new File([outputBlob], 'circle-crop.png', { type: 'image/png' });
 
-  // On iOS the only way to reach the Photos app is the share sheet (Save Image).
-  // Use it whenever the browser supports file sharing; fall back to blob download on desktop.
-  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+  // Prefer the native share sheet (iOS → "Save Image" lands in Photos).
+  // Attempt it directly; if the browser rejects for any reason other than
+  // the user dismissing, fall back to a plain blob download.
+  if (navigator.share) {
+    const file = new File([outputBlob], 'circle-crop.png', { type: 'image/png' });
     try {
       await navigator.share({ files: [file], title: 'Circle Crop' });
+      return;
     } catch (err) {
-      if (err.name !== 'AbortError') downloadBlob();
+      if (err.name === 'AbortError') return; // user dismissed — nothing to do
+      // Any other error (NotAllowedError, DataError, …): fall through to download
     }
-  } else {
-    downloadBlob();
   }
+
+  downloadBlob();
 }
 
 resetBtn.addEventListener('click', () => {
