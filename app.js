@@ -3,6 +3,7 @@
 // ── DOM references ────────────────────────────────────────────────────────────
 
 const fileInput     = document.getElementById('fileInput');
+const pasteBtn      = document.getElementById('pasteBtn');
 const uploadSection = document.getElementById('uploadSection');
 const editorSection = document.getElementById('editorSection');
 const editorCanvas  = document.getElementById('editorCanvas');
@@ -33,6 +34,31 @@ const crop = { cx: 0, cy: 0, r: 0 };
 fileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) processFile(file);
+});
+
+if (navigator.clipboard?.read) {
+  pasteBtn.hidden = false;
+}
+
+pasteBtn.addEventListener('click', async () => {
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const imageType = item.types.find(t => t.startsWith('image/'));
+      if (imageType) {
+        const blob = await item.getType(imageType);
+        processFile(blob);
+        return;
+      }
+    }
+    showToast('No image found in clipboard.');
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      showToast('Clipboard access denied.');
+    } else {
+      showToast('Could not read clipboard.');
+    }
+  }
 });
 
 document.addEventListener('paste', (e) => {
