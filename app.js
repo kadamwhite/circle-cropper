@@ -35,6 +35,21 @@ fileInput.addEventListener('change', (e) => {
   if (file) processFile(file);
 });
 
+document.addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) {
+        e.preventDefault();
+        processFile(file);
+        return;
+      }
+    }
+  }
+});
+
 function processFile(file) {
   showLoading();
   const url = URL.createObjectURL(file);
@@ -42,8 +57,14 @@ function processFile(file) {
   img.onload = () => {
     URL.revokeObjectURL(url);
     hideLoading();
-    uploadSection.hidden = true;
-    editorSection.hidden = false; // must be visible before initEditor measures clientWidth
+    if (displayBlobUrl) {
+      URL.revokeObjectURL(displayBlobUrl);
+      displayBlobUrl = null;
+    }
+    outputBlob = null;
+    uploadSection.hidden  = true;
+    resultSection.hidden  = true;
+    editorSection.hidden  = false; // must be visible before initEditor measures clientWidth
     initEditor(img);
   };
   img.onerror = () => {
